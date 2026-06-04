@@ -1,0 +1,454 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B10001 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20001; };
+		B10002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20002; };
+		B10003 /* SessionPhase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20003; };
+		B10004 /* SessionEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20004; };
+		B10005 /* ChatMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20005; };
+		B10006 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20006; };
+		B10007 /* AgentMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20007; };
+		B10008 /* HookServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20008; };
+		B10009 /* NotchGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20009; };
+		B10010 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20010; };
+		B10011 /* SessionMetadataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20011; };
+		B10012 /* IslandViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20012; };
+		B10013 /* TerminalAppRegistry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20013; };
+		B10014 /* ProcessTreeBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20014; };
+		B10015 /* TerminalFocuser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20015; };
+		B10016 /* ConversationParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20016; };
+		B10017 /* ChatHistoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20017; };
+		B10018 /* NotchPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20018; };
+		B10019 /* NotchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20019; };
+		B10020 /* ProcessingSpinner.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20020; };
+		B10021 /* MarkdownTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20021; };
+		B10022 /* IslandView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20022; };
+		B10023 /* SessionListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20023; };
+		B10024 /* SessionListContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20024; };
+		B10025 /* SettingsContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20025; };
+		B10026 /* ChatContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20026; };
+		B10027 /* UserQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20027; };
+		B10028 /* QuestionContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20028; };
+		B10029 /* KeySender.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20029; };
+		B10030 /* PermissionRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20030; };
+		B10099 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B20099; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B20001 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		B20002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B20003 /* SessionPhase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPhase.swift; sourceTree = "<group>"; };
+		B20004 /* SessionEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionEvent.swift; sourceTree = "<group>"; };
+		B20005 /* ChatMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessage.swift; sourceTree = "<group>"; };
+		B20006 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
+		B20007 /* AgentMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentMonitor.swift; sourceTree = "<group>"; };
+		B20008 /* HookServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HookServer.swift; sourceTree = "<group>"; };
+		B20009 /* NotchGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchGeometry.swift; sourceTree = "<group>"; };
+		B20010 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		B20011 /* SessionMetadataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionMetadataManager.swift; sourceTree = "<group>"; };
+		B20012 /* IslandViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IslandViewModel.swift; sourceTree = "<group>"; };
+		B20013 /* TerminalAppRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalAppRegistry.swift; sourceTree = "<group>"; };
+		B20014 /* ProcessTreeBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessTreeBuilder.swift; sourceTree = "<group>"; };
+		B20015 /* TerminalFocuser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TerminalFocuser.swift; sourceTree = "<group>"; };
+		B20016 /* ConversationParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationParser.swift; sourceTree = "<group>"; };
+		B20017 /* ChatHistoryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatHistoryManager.swift; sourceTree = "<group>"; };
+		B20018 /* NotchPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchPanel.swift; sourceTree = "<group>"; };
+		B20019 /* NotchViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchViewController.swift; sourceTree = "<group>"; };
+		B20020 /* ProcessingSpinner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessingSpinner.swift; sourceTree = "<group>"; };
+		B20021 /* MarkdownTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownTextView.swift; sourceTree = "<group>"; };
+		B20022 /* IslandView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IslandView.swift; sourceTree = "<group>"; };
+		B20023 /* SessionListRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionListRow.swift; sourceTree = "<group>"; };
+		B20024 /* SessionListContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionListContentView.swift; sourceTree = "<group>"; };
+		B20025 /* SettingsContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsContentView.swift; sourceTree = "<group>"; };
+		B20026 /* ChatContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatContentView.swift; sourceTree = "<group>"; };
+		B20027 /* UserQuestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserQuestion.swift; sourceTree = "<group>"; };
+		B20028 /* QuestionContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionContentView.swift; sourceTree = "<group>"; };
+		B20029 /* KeySender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeySender.swift; sourceTree = "<group>"; };
+		B20030 /* PermissionRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionRequestView.swift; sourceTree = "<group>"; };
+		B20098 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B20099 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B20100 /* SlopIsland.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SlopIsland.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B30001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B40001 = {
+			isa = PBXGroup;
+			children = (
+				B40002 /* SlopIsland */,
+				B40099 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B40002 /* SlopIsland */ = {
+			isa = PBXGroup;
+			children = (
+				B20001 /* main.swift */,
+				B20002 /* AppDelegate.swift */,
+				B40003 /* Models */,
+				B40004 /* Store */,
+				B40005 /* Core */,
+				B40006 /* Services */,
+				B40007 /* Monitor */,
+				B40008 /* UI */,
+				B40009 /* Resources */,
+				B20098 /* Info.plist */,
+			);
+			path = SlopIsland;
+			sourceTree = "<group>";
+		};
+		B40003 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				B20003 /* SessionPhase.swift */,
+				B20004 /* SessionEvent.swift */,
+				B20005 /* ChatMessage.swift */,
+				B20027 /* UserQuestion.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		B40004 /* Store */ = {
+			isa = PBXGroup;
+			children = (
+				B20006 /* SessionStore.swift */,
+			);
+			path = Store;
+			sourceTree = "<group>";
+		};
+		B40005 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				B20009 /* NotchGeometry.swift */,
+				B20010 /* AppSettings.swift */,
+				B20011 /* SessionMetadataManager.swift */,
+				B20012 /* IslandViewModel.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		B40006 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B20013 /* TerminalAppRegistry.swift */,
+				B20014 /* ProcessTreeBuilder.swift */,
+				B20015 /* TerminalFocuser.swift */,
+				B20016 /* ConversationParser.swift */,
+				B20017 /* ChatHistoryManager.swift */,
+				B20029 /* KeySender.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B40007 /* Monitor */ = {
+			isa = PBXGroup;
+			children = (
+				B20007 /* AgentMonitor.swift */,
+				B20008 /* HookServer.swift */,
+			);
+			path = Monitor;
+			sourceTree = "<group>";
+		};
+		B40008 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				B40010 /* Window */,
+				B40011 /* Components */,
+				B40012 /* Views */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		B40010 /* Window */ = {
+			isa = PBXGroup;
+			children = (
+				B20018 /* NotchPanel.swift */,
+				B20019 /* NotchViewController.swift */,
+			);
+			path = Window;
+			sourceTree = "<group>";
+		};
+		B40011 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				B20020 /* ProcessingSpinner.swift */,
+				B20021 /* MarkdownTextView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		B40012 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				B20022 /* IslandView.swift */,
+				B20023 /* SessionListRow.swift */,
+				B20024 /* SessionListContentView.swift */,
+				B20025 /* SettingsContentView.swift */,
+				B20026 /* ChatContentView.swift */,
+				B20028 /* QuestionContentView.swift */,
+				B20030 /* PermissionRequestView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B40009 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				B20099 /* Assets.xcassets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		B40099 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B20100 /* SlopIsland.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B50001 /* SlopIsland */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B70002 /* Build configuration list for PBXNativeTarget "SlopIsland" */;
+			buildPhases = (
+				B60001 /* Sources */,
+				B30001 /* Frameworks */,
+				B60002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SlopIsland;
+			productName = SlopIsland;
+			productReference = B20100 /* SlopIsland.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B80001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1540;
+			};
+			buildConfigurationList = B70001 /* Build configuration list for PBXProject "SlopIsland" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = B40001;
+			productRefGroup = B40099 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B50001 /* SlopIsland */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B60002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10099 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B60001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B10001 /* main.swift in Sources */,
+				B10002 /* AppDelegate.swift in Sources */,
+				B10003 /* SessionPhase.swift in Sources */,
+				B10004 /* SessionEvent.swift in Sources */,
+				B10005 /* ChatMessage.swift in Sources */,
+				B10006 /* SessionStore.swift in Sources */,
+				B10007 /* AgentMonitor.swift in Sources */,
+				B10008 /* HookServer.swift in Sources */,
+				B10009 /* NotchGeometry.swift in Sources */,
+				B10010 /* AppSettings.swift in Sources */,
+				B10011 /* SessionMetadataManager.swift in Sources */,
+				B10012 /* IslandViewModel.swift in Sources */,
+				B10013 /* TerminalAppRegistry.swift in Sources */,
+				B10014 /* ProcessTreeBuilder.swift in Sources */,
+				B10015 /* TerminalFocuser.swift in Sources */,
+				B10016 /* ConversationParser.swift in Sources */,
+				B10017 /* ChatHistoryManager.swift in Sources */,
+				B10018 /* NotchPanel.swift in Sources */,
+				B10019 /* NotchViewController.swift in Sources */,
+				B10020 /* ProcessingSpinner.swift in Sources */,
+				B10021 /* MarkdownTextView.swift in Sources */,
+				B10022 /* IslandView.swift in Sources */,
+				B10023 /* SessionListRow.swift in Sources */,
+				B10024 /* SessionListContentView.swift in Sources */,
+				B10025 /* SettingsContentView.swift in Sources */,
+				B10026 /* ChatContentView.swift in Sources */,
+				B10027 /* UserQuestion.swift in Sources */,
+				B10028 /* QuestionContentView.swift in Sources */,
+				B10029 /* KeySender.swift in Sources */,
+				B10030 /* PermissionRequestView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		B90001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		B90002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		B90003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SlopIsland/Info.plist;
+				INFOPLIST_KEY_NSMainNibFile = "";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.slopIsland.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		B90004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SlopIsland/Info.plist;
+				INFOPLIST_KEY_NSMainNibFile = "";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.2.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.slopIsland.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B70001 /* Build configuration list for PBXProject "SlopIsland" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B90001 /* Debug */,
+				B90002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B70002 /* Build configuration list for PBXNativeTarget "SlopIsland" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B90003 /* Debug */,
+				B90004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = B80001 /* Project object */;
+}
