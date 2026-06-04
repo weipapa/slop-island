@@ -1,31 +1,121 @@
 import AppKit
+import CoreServices
 
 final class AgentMonitor {
 
     private let projectsDir = NSString(string: "~/.codefuse/engine/cc/projects").expandingTildeInPath
     private var watchedFiles: [String: UInt64] = [:]
-    private var pollTimer: Timer?
     private var sessionStartTimes: [String: Date] = [:]
 
     private var isRunning = false
     private var idleTimer: Timer?
+    private var eventStream: FSEventStreamRef?
+
+    /// FSEvents C callback: trampolines back to the owning monitor. Captures
+    /// nothing so it converts to a `@convention(c)` pointer.
+    private let eventCallback: FSEventStreamCallback = { _, info, count, pathsPtr, flagsPtr, _ in
+        guard let info = info else { return }
+        let monitor = Unmanaged<AgentMonitor>.fromOpaque(info).takeUnretainedValue()
+        let paths = unsafeBitCast(pathsPtr, to: NSArray.self) as? [String] ?? []
+        let flags = (0..<count).map { flagsPtr[$0] }
+        monitor.handleEvents(paths: paths, flags: flags)
+    }
 
     func start() {
         guard !isRunning else { return }
         isRunning = true
 
-        scanExistingSessions()
-
-        pollTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            self?.pollActiveFiles()
+        // Drop per-session caches when the store recycles a session, so our
+        // dictionaries don't grow without bound.
+        SessionStore.shared.observeRemoval { [weak self] sessionID in
+            guard let self = self else { return }
+            self.sessionStartTimes.removeValue(forKey: sessionID)
+            let suffix = "/\(sessionID).jsonl"
+            for path in self.watchedFiles.keys where path.hasSuffix(suffix) {
+                self.watchedFiles.removeValue(forKey: path)
+            }
         }
+
+        scanExistingSessions()
+        startEventStream()
     }
 
     func stop() {
         isRunning = false
-        pollTimer?.invalidate()
-        pollTimer = nil
+        if let stream = eventStream {
+            FSEventStreamStop(stream)
+            FSEventStreamInvalidate(stream)
+            FSEventStreamRelease(stream)
+            eventStream = nil
+        }
         idleTimer?.invalidate()
+    }
+
+    /// Watch the projects directory for file-level changes instead of polling
+    /// the whole tree every second. Callbacks are delivered on the main queue,
+    /// matching the threading the rest of this class (and SessionStore) assume.
+    private func startEventStream() {
+        var context = FSEventStreamContext(
+            version: 0,
+            info: Unmanaged.passUnretained(self).toOpaque(),
+            retain: nil,
+            release: nil,
+            copyDescription: nil
+        )
+        let flags = UInt32(
+            kFSEventStreamCreateFlagFileEvents |
+            kFSEventStreamCreateFlagNoDefer |
+            kFSEventStreamCreateFlagUseCFTypes
+        )
+        guard let stream = FSEventStreamCreate(
+            kCFAllocatorDefault,
+            eventCallback,
+            &context,
+            [projectsDir] as CFArray,
+            FSEventStreamEventId(kFSEventStreamEventIdSinceNow),
+            0.3,
+            flags
+        ) else { return }
+
+        eventStream = stream
+        FSEventStreamSetDispatchQueue(stream, DispatchQueue.main)
+        FSEventStreamStart(stream)
+    }
+
+    /// Process only the files FSEvents reported as changed.
+    private func handleEvents(paths: [String], flags: [FSEventStreamEventFlags]) {
+        let now = Date()
+        var foundActive = false
+
+        for (i, path) in paths.enumerated() {
+            guard path.hasSuffix(".jsonl") else { continue }
+            let url = URL(fileURLWithPath: path)
+            guard url.deletingLastPathComponent().lastPathComponent != "subagents" else { continue }
+
+            let removed = i < flags.count
+                && (flags[i] & FSEventStreamEventFlags(kFSEventStreamEventFlagItemRemoved)) != 0
+            if removed, !FileManager.default.fileExists(atPath: path) {
+                watchedFiles.removeValue(forKey: path)
+                continue
+            }
+
+            guard let attrs = try? FileManager.default.attributesOfItem(atPath: path),
+                  let modDate = attrs[.modificationDate] as? Date,
+                  now.timeIntervalSince(modDate) < 300 else { continue }
+
+            foundActive = true
+            let currentSize = (attrs[.size] as? UInt64) ?? 0
+            let lastSize = watchedFiles[path] ?? currentSize
+
+            if currentSize > lastSize {
+                readNewContent(path: path, from: lastSize, to: currentSize)
+            }
+            watchedFiles[path] = currentSize
+        }
+
+        if foundActive {
+            resetIdleTimer()
+        }
     }
 
     private func scanExistingSessions() {
@@ -68,9 +158,10 @@ final class AgentMonitor {
         }
     }
 
+    /// Read only the tail of the file (transcripts can be multiple MB) and find
+    /// the most recent meaningful action.
     private func readLastAction(path: String) -> String? {
-        guard let data = FileManager.default.contents(atPath: path),
-              let text = String(data: data, encoding: .utf8) else { return nil }
+        guard let text = tail(path: path, maxBytes: 256 * 1024) else { return nil }
 
         let lines = text.components(separatedBy: "\n").reversed()
         for line in lines {
@@ -101,38 +192,22 @@ final class AgentMonitor {
         return nil
     }
 
-    private func pollActiveFiles() {
-        guard let enumerator = FileManager.default.enumerator(
-            at: URL(fileURLWithPath: projectsDir),
-            includingPropertiesForKeys: [.contentModificationDateKey],
-            options: [.skipsHiddenFiles]
-        ) else { return }
+    /// Read up to the last `maxBytes` of a file as UTF-8, dropping a leading
+    /// partial line so JSON parsing never sees a truncated record.
+    private func tail(path: String, maxBytes: UInt64) -> String? {
+        guard let handle = FileHandle(forReadingAtPath: path) else { return nil }
+        defer { handle.closeFile() }
 
-        let now = Date()
-        var foundActive = false
+        let size = handle.seekToEndOfFile()
+        let offset = size > maxBytes ? size - maxBytes : 0
+        handle.seek(toFileOffset: offset)
+        let data = handle.readDataToEndOfFile()
+        guard var text = String(data: data, encoding: .utf8) else { return nil }
 
-        while let url = enumerator.nextObject() as? URL {
-            guard url.pathExtension == "jsonl" else { continue }
-            guard url.deletingLastPathComponent().lastPathComponent != "subagents" else { continue }
-
-            let path = url.path
-            guard let attrs = try? FileManager.default.attributesOfItem(atPath: path),
-                  let modDate = attrs[.modificationDate] as? Date,
-                  now.timeIntervalSince(modDate) < 300 else { continue }
-
-            foundActive = true
-            let currentSize = (attrs[.size] as? UInt64) ?? 0
-            let lastSize = watchedFiles[path] ?? currentSize
-
-            if currentSize > lastSize {
-                readNewContent(path: path, from: lastSize, to: currentSize)
-            }
-            watchedFiles[path] = currentSize
+        if offset > 0, let firstNewline = text.firstIndex(of: "\n") {
+            text = String(text[text.index(after: firstNewline)...])
         }
-
-        if foundActive {
-            resetIdleTimer()
-        }
+        return text
     }
 
     private func readNewContent(path: String, from: UInt64, to: UInt64) {
@@ -165,6 +240,15 @@ final class AgentMonitor {
     private func processJsonlEntry(_ json: [String: Any], sessionId: String, projectDir: String, projectName: String) {
         let type = json["type"] as? String ?? ""
         let store = SessionStore.shared
+
+        // The hook stream is authoritative for permission/question prompts.
+        // Never let file-polled activity overwrite a session that's waiting on
+        // the user (would make the permission UI vanish).
+        if store.sessions[sessionId]?.phase.needsAttention == true,
+           !(type == "system") {
+            return
+        }
+
         let elapsed = formatDuration(since: sessionStartTimes[sessionId] ?? Date())
 
         switch type {
@@ -260,6 +344,8 @@ final class AgentMonitor {
         idleTimer = Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { [weak self] _ in
             guard let self = self else { return }
             for sessionId in self.sessionStartTimes.keys {
+                // Don't mark a session idle while it's waiting on the user.
+                if SessionStore.shared.sessions[sessionId]?.phase.needsAttention == true { continue }
                 SessionStore.shared.process(.sessionIdle(sessionID: sessionId))
             }
         }

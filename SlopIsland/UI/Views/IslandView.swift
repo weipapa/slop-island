@@ -63,7 +63,8 @@ struct IslandView: View {
                     ChatContentView(sessionID: sessionID, session: session, viewModel: viewModel)
                 }
             case .question(let question):
-                QuestionContentView(question: question) {
+                QuestionContentView(question: question) { index in
+                    SessionStore.shared.answerQuestion(question, optionIndex: index)
                     viewModel.dismissQuestion()
                 }
             case .permission(let session, let context):

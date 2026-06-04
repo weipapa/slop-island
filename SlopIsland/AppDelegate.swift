@@ -26,7 +26,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         monitor.start()
 
         hookServer = HookServer()
+        SessionStore.shared.hookServer = hookServer
         hookServer.start()
+
+        HookInstaller.installIfNeeded()
 
         setupStoreObserver()
     }

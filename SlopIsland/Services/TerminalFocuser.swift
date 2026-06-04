@@ -3,7 +3,10 @@ import AppKit
 struct TerminalFocuser {
     static let shared = TerminalFocuser()
 
-    func focusTerminal() {
+    /// Focus the terminal hosting a `claude` process. Calls `completion(true)`
+    /// on the main queue once `open -a` has run, or `completion(false)` if no
+    /// terminal could be resolved.
+    func focusTerminal(completion: ((Bool) -> Void)? = nil) {
         NSLog("[SlopIsland] focusTerminal called")
         DispatchQueue.global(qos: .userInitiated).async {
             let tree = ProcessTreeBuilder.shared.buildTree()
@@ -19,13 +22,18 @@ struct TerminalFocuser {
                 }
             }
 
+            func finish(_ ok: Bool) {
+                DispatchQueue.main.async { completion?(ok) }
+            }
+
             guard let command = terminalCommand else {
                 NSLog("[SlopIsland] No terminal found")
+                finish(false)
                 return
             }
             let appName = Self.appName(for: command)
             NSLog("[SlopIsland] appName: \(appName ?? "nil")")
-            guard let name = appName else { return }
+            guard let name = appName else { finish(false); return }
 
             let task = Process()
             task.executableURL = URL(fileURLWithPath: "/usr/bin/open")
@@ -34,8 +42,10 @@ struct TerminalFocuser {
                 try task.run()
                 task.waitUntilExit()
                 NSLog("[SlopIsland] open -a \(name) exit code: \(task.terminationStatus)")
+                finish(task.terminationStatus == 0)
             } catch {
                 NSLog("[SlopIsland] open failed: \(error)")
+                finish(false)
             }
         }
     }

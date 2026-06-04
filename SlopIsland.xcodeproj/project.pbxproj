@@ -15,6 +15,8 @@
 		B10006 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20006; };
 		B10007 /* AgentMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20007; };
 		B10008 /* HookServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20008; };
+		B10101 /* HookInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20101; };
+		B10102 /* slopisland-hook.py in Resources */ = {isa = PBXBuildFile; fileRef = B20102; };
 		B10009 /* NotchGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20009; };
 		B10010 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20010; };
 		B10011 /* SessionMetadataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20011; };
@@ -49,6 +51,8 @@
 		B20006 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		B20007 /* AgentMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AgentMonitor.swift; sourceTree = "<group>"; };
 		B20008 /* HookServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HookServer.swift; sourceTree = "<group>"; };
+		B20101 /* HookInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HookInstaller.swift; sourceTree = "<group>"; };
+		B20102 /* slopisland-hook.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = "slopisland-hook.py"; sourceTree = "<group>"; };
 		B20009 /* NotchGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchGeometry.swift; sourceTree = "<group>"; };
 		B20010 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		B20011 /* SessionMetadataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionMetadataManager.swift; sourceTree = "<group>"; };
@@ -160,6 +164,7 @@
 			children = (
 				B20007 /* AgentMonitor.swift */,
 				B20008 /* HookServer.swift */,
+				B20101 /* HookInstaller.swift */,
 			);
 			path = Monitor;
 			sourceTree = "<group>";
@@ -210,6 +215,7 @@
 			isa = PBXGroup;
 			children = (
 				B20099 /* Assets.xcassets */,
+				B20102 /* slopisland-hook.py */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -276,6 +282,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				B10099 /* Assets.xcassets in Resources */,
+				B10102 /* slopisland-hook.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -294,6 +301,7 @@
 				B10006 /* SessionStore.swift in Sources */,
 				B10007 /* AgentMonitor.swift in Sources */,
 				B10008 /* HookServer.swift in Sources */,
+				B10101 /* HookInstaller.swift in Sources */,
 				B10009 /* NotchGeometry.swift in Sources */,
 				B10010 /* AppSettings.swift in Sources */,
 				B10011 /* SessionMetadataManager.swift in Sources */,
@@ -384,7 +392,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "SlopIsland Local";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "SlopIsland Local";
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -407,7 +417,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_IDENTITY = "SlopIsland Local";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "SlopIsland Local";
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = NO;

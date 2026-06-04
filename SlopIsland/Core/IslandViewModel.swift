@@ -52,7 +52,11 @@ final class IslandViewModel {
         case .chat:
             return 400
         case .question(let q):
-            return 60 + CGFloat(max(q.options.count, 1)) * 44
+            // header + wrapped question text + one card per option (label+desc).
+            let optionsHeight = q.options.reduce(CGFloat(0)) { acc, opt in
+                acc + ((opt.description?.isEmpty == false) ? 60 : 42) + 8
+            }
+            return 90 + optionsHeight
         case .permission:
             return 180
         }

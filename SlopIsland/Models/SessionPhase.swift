@@ -27,9 +27,9 @@ enum SessionPhase: Equatable {
     }
 
     func canTransition(to next: SessionPhase) -> Bool {
-        if case .ended = self { return false }
-        if case .ended = next { return true }
         if self == next { return true }
+        // Any phase may end.
+        if case .ended = next { return true }
 
         switch self {
         case .idle:
@@ -37,21 +37,32 @@ enum SessionPhase: Equatable {
         case .processing:
             return true
         case .waitingForApproval:
+            // Only an explicit resolution (continue/idle) or end may clear an
+            // approval prompt. Plain activity must NOT clobber it.
             switch next {
-            case .processing, .idle, .ended:
+            case .processing, .idle:
                 return true
             default:
                 return false
             }
         case .waitingForQuestion:
             switch next {
-            case .processing, .idle, .ended:
+            case .processing, .idle:
                 return true
             default:
                 return false
             }
         case .ended:
-            return false
+            // A previously ended session reactivates when genuine new activity
+            // arrives (the same sessionID is reused after the user keeps going).
+            switch next {
+            case .processing, .waitingForApproval, .waitingForQuestion:
+                return true
+            case .idle:
+                return false
+            default:
+                return false
+            }
         }
     }
 

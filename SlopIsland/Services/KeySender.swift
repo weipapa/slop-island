@@ -1,21 +1,47 @@
 import AppKit
 
 struct KeySender {
-    static func sendToTerminal(text: String) {
-        TerminalFocuser.shared.focusTerminal()
+    /// Whether SlopIsland currently has Accessibility permission (required for
+    /// synthetic key events). Does not prompt.
+    static var hasAccessibilityPermission: Bool {
+        AXIsProcessTrusted()
+    }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            for char in text {
-                sendKey(char)
-            }
-            sendReturn()
+    /// Prompt the user to grant Accessibility permission (opens System Settings).
+    static func requestAccessibilityPermission() {
+        let opts = [kAXTrustedCheckOptionPrompt.takeRetainedValue() as String: true]
+        _ = AXIsProcessTrustedWithOptions(opts as CFDictionary)
+    }
+
+    /// Focus the session's terminal, then inject `text` followed by Return.
+    /// Returns false immediately if Accessibility permission is missing.
+    @discardableResult
+    static func sendToTerminal(text: String) -> Bool {
+        guard hasAccessibilityPermission else {
+            requestAccessibilityPermission()
+            return false
         }
+
+        TerminalFocuser.shared.focusTerminal { focused in
+            guard focused else {
+                send(text)
+                return
+            }
+            // Small settle delay after focus actually completes.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                send(text)
+            }
+        }
+        return true
+    }
+
+    private static func send(_ text: String) {
+        for char in text { sendKey(char) }
+        sendReturn()
     }
 
     private static func sendKey(_ char: Character) {
         let str = String(char)
-        guard let chars = str.utf16.first else { return }
-
         let source = CGEventSource(stateID: .hidSystemState)
         if let keyDown = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: true) {
             var utf16 = [UniChar](str.utf16)
