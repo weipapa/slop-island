@@ -35,6 +35,52 @@ struct KeySender {
         return true
     }
 
+    /// Answer a multi-question AskUserQuestion: for each question inject its
+    /// option number, advancing to the next question with Tab, and submitting
+    /// after the last with Return. Each keystroke is spaced out so the terminal
+    /// TUI can process and re-render between steps.
+    @discardableResult
+    static func sendAnswerSequence(numbers: [Int]) -> Bool {
+        guard hasAccessibilityPermission else {
+            requestAccessibilityPermission()
+            return false
+        }
+        guard !numbers.isEmpty else { return false }
+
+        TerminalFocuser.shared.focusTerminal { focused in
+            let start: Double = focused ? 0.12 : 0.0
+            var delay = start
+            let step = 0.12
+
+            for (i, number) in numbers.enumerated() {
+                let isLast = i == numbers.count - 1
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                    for char in "\(number)" { sendKey(char) }
+                }
+                delay += step
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                    if isLast {
+                        sendReturn()
+                    } else {
+                        sendTab()
+                    }
+                }
+                delay += step
+            }
+        }
+        return true
+    }
+
+    private static func sendTab() {
+        let source = CGEventSource(stateID: .hidSystemState)
+        if let down = CGEvent(keyboardEventSource: source, virtualKey: 0x30, keyDown: true) {
+            down.post(tap: .cghidEventTap)
+        }
+        if let up = CGEvent(keyboardEventSource: source, virtualKey: 0x30, keyDown: false) {
+            up.post(tap: .cghidEventTap)
+        }
+    }
+
     private static func send(_ text: String) {
         for char in text { sendKey(char) }
         sendReturn()

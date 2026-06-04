@@ -71,7 +71,7 @@ enum SessionPhase: Equatable {
         case (.idle, .idle), (.ended, .ended): return true
         case (.processing(let a), .processing(let b)): return a == b
         case (.waitingForApproval(let a), .waitingForApproval(let b)): return a == b
-        case (.waitingForQuestion(let a), .waitingForQuestion(let b)): return a.sessionID == b.sessionID && a.question == b.question
+        case (.waitingForQuestion(let a), .waitingForQuestion(let b)): return a.sessionID == b.sessionID && a.items.count == b.items.count
         default: return false
         }
     }

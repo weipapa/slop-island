@@ -33,10 +33,12 @@ final class SessionStore {
         observers.append(handler)
     }
 
-    /// Answer an AskUserQuestion by injecting the option number into the
-    /// session's terminal (Claude's own TUI is still showing it).
-    func answerQuestion(_ question: UserQuestion, optionIndex: Int) {
-        KeySender.sendToTerminal(text: "\(optionIndex + 1)")
+    /// Answer an AskUserQuestion by injecting each question's chosen option
+    /// number into the terminal (Claude's own TUI is still showing it). For
+    /// multiple questions the sequence advances with Tab and submits with Return.
+    func answerQuestion(_ question: UserQuestion, optionIndices: [Int]) {
+        let numbers = optionIndices.map { $0 + 1 }
+        KeySender.sendAnswerSequence(numbers: numbers)
         updatePhase(sessionID: question.sessionID, phase: .processing(action: "continuing"))
     }
 

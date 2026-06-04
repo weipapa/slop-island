@@ -62,19 +62,29 @@ struct HookEvent {
     /// multiple-choice prompt, not an allow/deny gate.
     var isAskUserQuestion: Bool { toolName == "AskUserQuestion" }
 
-    /// Parse the AskUserQuestion structure into a UserQuestion (first question).
+    /// Parse the AskUserQuestion structure into a UserQuestion holding every
+    /// bundled question (Claude can ask several at once).
     func parseQuestion() -> UserQuestion? {
         guard let questions = toolInput["questions"] as? [[String: Any]],
-              let first = questions.first,
-              let text = first["question"] as? String else { return nil }
-        let rawOptions = first["options"] as? [[String: Any]] ?? []
-        let options = rawOptions.map { opt in
-            QuestionOption(
-                label: opt["label"] as? String ?? "",
-                description: opt["description"] as? String
+              !questions.isEmpty else { return nil }
+        let items: [QuestionItem] = questions.compactMap { q in
+            guard let prompt = q["question"] as? String else { return nil }
+            let rawOptions = q["options"] as? [[String: Any]] ?? []
+            let options = rawOptions.map { opt in
+                QuestionOption(
+                    label: opt["label"] as? String ?? "",
+                    description: opt["description"] as? String
+                )
+            }
+            return QuestionItem(
+                header: q["header"] as? String ?? "",
+                prompt: prompt,
+                options: options,
+                multiSelect: q["multiSelect"] as? Bool ?? false
             )
         }
-        return UserQuestion(sessionID: sessionID, cwd: cwd, question: text, options: options)
+        guard !items.isEmpty else { return nil }
+        return UserQuestion(sessionID: sessionID, cwd: cwd, items: items)
     }
 
     /// Project display name derived from cwd.

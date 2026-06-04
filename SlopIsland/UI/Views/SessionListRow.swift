@@ -128,11 +128,11 @@ struct SessionRowContentView: View {
 
         case .waitingForQuestion(let q):
             VStack(alignment: .leading, spacing: 2) {
-                Text(q.question)
+                Text(q.items.first?.prompt ?? "")
                     .font(.system(size: 11))
                     .foregroundColor(Color(red: 0.0, green: 0.75, blue: 0.85).opacity(0.7))
                     .lineLimit(1)
-                Text("Claude asks \u{2014} click to answer")
+                Text(questionSubtitle(q))
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(Color(red: 0.0, green: 0.75, blue: 0.85))
             }
@@ -147,6 +147,14 @@ struct SessionRowContentView: View {
                 .font(.system(size: 11))
                 .foregroundColor(.white.opacity(0.3))
         }
+    }
+
+    private func questionSubtitle(_ q: UserQuestion) -> String {
+        let count = q.items.count
+        if count > 1 {
+            return "Claude asks \(count) questions \u{2014} click to answer"
+        }
+        return "Claude asks \u{2014} click to answer"
     }
 
     private var elapsedTime: String {

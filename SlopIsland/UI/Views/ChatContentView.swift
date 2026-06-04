@@ -58,8 +58,7 @@ struct ChatContentView: View {
 
             Spacer()
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.bottom, 8)
     }
 
     private var messageList: some View {
@@ -72,7 +71,7 @@ struct ChatContentView: View {
                     }
                     Color.clear.frame(height: 1).id("bottom")
                 }
-                .padding(12)
+                .padding(.vertical, 10)
             }
             .onAppear {
                 proxy.scrollTo("bottom", anchor: .bottom)

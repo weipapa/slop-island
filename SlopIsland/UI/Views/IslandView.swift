@@ -44,30 +44,33 @@ struct IslandView: View {
 
     @ViewBuilder
     private var contentView: some View {
-        VStack(spacing: 0) {
-            switch viewModel.contentType {
-            case .sessions, .settings, .chat:
-                headerRow
-                    .frame(height: 32)
-            case .question, .permission:
-                EmptyView()
-            }
-
-            switch viewModel.contentType {
-            case .sessions:
-                SessionListContentView(viewModel: viewModel)
-            case .settings:
-                SettingsContentView(viewModel: viewModel)
-            case .chat(let sessionID):
-                if let session = store.sessions[sessionID] {
+        switch viewModel.contentType {
+        case .sessions:
+            VStack(spacing: 0) { SessionListContentView(viewModel: viewModel) }
+                .padding(10)
+        case .chat(let sessionID):
+            if let session = store.sessions[sessionID] {
+                VStack(spacing: 0) {
                     ChatContentView(sessionID: sessionID, session: session, viewModel: viewModel)
                 }
-            case .question(let question):
-                QuestionContentView(question: question) { index in
-                    SessionStore.shared.answerQuestion(question, optionIndex: index)
+                .padding(10)
+            }
+        case .question(let question):
+            // Top-aligned scroll view: panel height is a fixed estimate, the
+            // scroll view absorbs any shortfall so content is never clipped and
+            // always starts at the first question.
+            ScrollView(.vertical, showsIndicators: false) {
+                QuestionContentView(question: question, onComplete: { indices in
+                    SessionStore.shared.answerQuestion(question, optionIndices: indices)
                     viewModel.dismissQuestion()
-                }
-            case .permission(let session, let context):
+                }, onPageChange: { page in
+                    viewModel.setQuestionPage(page)
+                })
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+            }
+        case .permission(let session, let context):
+            VStack(spacing: 0) {
                 PermissionRequestView(session: session, context: context) {
                     SessionStore.shared.process(.permissionApproved(sessionID: session.sessionID))
                     viewModel.dismissPermission()
@@ -76,25 +79,7 @@ struct IslandView: View {
                     viewModel.dismissPermission()
                 }
             }
-        }
-        .padding(12)
-    }
-
-    private var headerRow: some View {
-        HStack {
-            if case .chat = viewModel.contentType {
-                Button {
-                    viewModel.exitChat()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundColor(.white.opacity(0.5))
-                        .frame(width: 24, height: 24)
-                }
-                .buttonStyle(.plain)
-            }
-
-            Spacer()
+            .padding(10)
         }
     }
 }

@@ -33,7 +33,6 @@
 		B10022 /* IslandView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20022; };
 		B10023 /* SessionListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20023; };
 		B10024 /* SessionListContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20024; };
-		B10025 /* SettingsContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20025; };
 		B10026 /* ChatContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20026; };
 		B10027 /* UserQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20027; };
 		B10028 /* QuestionContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20028; };
@@ -69,7 +68,6 @@
 		B20022 /* IslandView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IslandView.swift; sourceTree = "<group>"; };
 		B20023 /* SessionListRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionListRow.swift; sourceTree = "<group>"; };
 		B20024 /* SessionListContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionListContentView.swift; sourceTree = "<group>"; };
-		B20025 /* SettingsContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsContentView.swift; sourceTree = "<group>"; };
 		B20026 /* ChatContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatContentView.swift; sourceTree = "<group>"; };
 		B20027 /* UserQuestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserQuestion.swift; sourceTree = "<group>"; };
 		B20028 /* QuestionContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionContentView.swift; sourceTree = "<group>"; };
@@ -203,7 +201,6 @@
 				B20022 /* IslandView.swift */,
 				B20023 /* SessionListRow.swift */,
 				B20024 /* SessionListContentView.swift */,
-				B20025 /* SettingsContentView.swift */,
 				B20026 /* ChatContentView.swift */,
 				B20028 /* QuestionContentView.swift */,
 				B20030 /* PermissionRequestView.swift */,
@@ -318,7 +315,6 @@
 				B10022 /* IslandView.swift in Sources */,
 				B10023 /* SessionListRow.swift in Sources */,
 				B10024 /* SessionListContentView.swift in Sources */,
-				B10025 /* SettingsContentView.swift in Sources */,
 				B10026 /* ChatContentView.swift in Sources */,
 				B10027 /* UserQuestion.swift in Sources */,
 				B10028 /* QuestionContentView.swift in Sources */,

@@ -6,14 +6,13 @@ final class IslandViewModel {
     enum Status: Equatable { case closed, opened }
     enum ContentType: Equatable {
         case sessions
-        case settings
         case chat(String)
         case question(UserQuestion)
         case permission(SessionState, PermissionContext)
 
         static func == (lhs: ContentType, rhs: ContentType) -> Bool {
             switch (lhs, rhs) {
-            case (.sessions, .sessions), (.settings, .settings): return true
+            case (.sessions, .sessions): return true
             case (.chat(let a), .chat(let b)): return a == b
             case (.question(let a), .question(let b)): return a.sessionID == b.sessionID
             case (.permission(let a, _), .permission(let b, _)): return a.sessionID == b.sessionID
@@ -42,24 +41,54 @@ final class IslandViewModel {
         }
     }
 
+    /// Maximum height the content area may occupy, leaving the panel on-screen.
+    private var maxContentHeight: CGFloat {
+        geometry.screenRect.height - geometry.notchHeight - 40
+    }
+
+    /// Which question page is currently shown (for paginated multi-question
+    /// prompts). Drives the per-page height so the panel hugs the visible page.
+    private var currentQuestionPage: Int = 0
+
     private var contentHeight: CGFloat {
         switch contentType {
         case .sessions:
             let count = max(SessionStore.shared.allSessions.count, 1)
-            return 40 + CGFloat(count) * 56 + 16
-        case .settings:
-            return 200
+            return 10 + CGFloat(count) * 56 + 16
         case .chat:
             return 400
-        case .question(let q):
-            // header + wrapped question text + one card per option (label+desc).
-            let optionsHeight = q.options.reduce(CGFloat(0)) { acc, opt in
-                acc + ((opt.description?.isEmpty == false) ? 60 : 42) + 8
-            }
-            return 90 + optionsHeight
         case .permission:
-            return 180
+            return 220
+        case .question(let q):
+            return min(questionHeight(q, page: currentQuestionPage), maxContentHeight)
         }
+    }
+
+    /// Called by the question view when the user turns to another page, so the
+    /// panel can resize to hug just that page.
+    func setQuestionPage(_ page: Int) {
+        guard case .question = contentType, page != currentQuestionPage else { return }
+        currentQuestionPage = page
+        if let panel = findPanel(), status == .opened {
+            panel.animateToSize(width: panelWidth, belowHeight: contentHeight)
+        }
+    }
+
+    /// Deterministic height estimate for the currently shown question page. Only
+    /// ONE question shows at a time, so size to exactly that page.
+    private func questionHeight(_ q: UserQuestion, page: Int) -> CGFloat {
+        let chrome: CGFloat = 20 + 28 + 14   // padding + header row + spacing
+        guard q.items.indices.contains(page) else { return chrome + 200 }
+        let item = q.items[page]
+        var block: CGFloat = 0
+        if q.items.count > 1, !item.header.isEmpty { block += 22 }
+        block += 40                          // prompt
+        for opt in item.options {
+            block += (opt.description?.isEmpty == false) ? 64 : 44
+            block += 8
+        }
+        if item.multiSelect { block += 48 }  // Next/Submit button
+        return chrome + block
     }
 
     var openedSize: CGSize {
@@ -90,11 +119,6 @@ final class IslandViewModel {
         }
     }
 
-    func toggleSettings() {
-        contentType = contentType == .settings ? .sessions : .settings
-        syncPanelSize()
-    }
-
     func showChat(sessionID: String) {
         contentType = .chat(sessionID)
         syncPanelSize()
@@ -106,6 +130,15 @@ final class IslandViewModel {
     }
 
     func showQuestion(_ question: UserQuestion) {
+        // Idempotent: the store re-notifies on every state change, but we must
+        // not reset the measured height / resize while already showing the same
+        // prompt (that collapses the panel back to the fallback minimum).
+        if case .question(let current) = contentType,
+           current.sessionID == question.sessionID,
+           current.items.count == question.items.count {
+            return
+        }
+        currentQuestionPage = 0
         contentType = .question(question)
         status = .opened
         if let panel = findPanel() {
@@ -125,6 +158,10 @@ final class IslandViewModel {
     }
 
     func showPermission(session: SessionState, context: PermissionContext) {
+        // Idempotent for the same session (store re-notifies repeatedly).
+        if case .permission(let cur, _) = contentType, cur.sessionID == session.sessionID {
+            return
+        }
         contentType = .permission(session, context)
         status = .opened
         if let panel = findPanel() {
@@ -147,7 +184,7 @@ final class IslandViewModel {
         if let next = nextPermission, case .waitingForApproval(let ctx) = next.phase {
             contentType = .permission(next, ctx)
             if let panel = findPanel() {
-                panel.animateToSize(width: panelWidth, belowHeight: contentHeight)
+                panel.setSize(width: panelWidth, belowHeight: contentHeight)
             }
         } else {
             contentType = .sessions

@@ -7,7 +7,6 @@ struct TerminalFocuser {
     /// on the main queue once `open -a` has run, or `completion(false)` if no
     /// terminal could be resolved.
     func focusTerminal(completion: ((Bool) -> Void)? = nil) {
-        NSLog("[SlopIsland] focusTerminal called")
         DispatchQueue.global(qos: .userInitiated).async {
             let tree = ProcessTreeBuilder.shared.buildTree()
             var terminalCommand: String?
@@ -17,7 +16,6 @@ struct TerminalFocuser {
                 if let termPID = ProcessTreeBuilder.shared.findTerminalPID(forProcess: info.pid, tree: tree),
                    let termInfo = tree[termPID] {
                     terminalCommand = termInfo.command
-                    NSLog("[SlopIsland] Found terminal: \(termInfo.command)")
                     break
                 }
             }
@@ -27,12 +25,10 @@ struct TerminalFocuser {
             }
 
             guard let command = terminalCommand else {
-                NSLog("[SlopIsland] No terminal found")
                 finish(false)
                 return
             }
             let appName = Self.appName(for: command)
-            NSLog("[SlopIsland] appName: \(appName ?? "nil")")
             guard let name = appName else { finish(false); return }
 
             let task = Process()
@@ -41,10 +37,8 @@ struct TerminalFocuser {
             do {
                 try task.run()
                 task.waitUntilExit()
-                NSLog("[SlopIsland] open -a \(name) exit code: \(task.terminationStatus)")
                 finish(task.terminationStatus == 0)
             } catch {
-                NSLog("[SlopIsland] open failed: \(error)")
                 finish(false)
             }
         }
