@@ -1,7 +1,9 @@
 <p align="center">
   <img src="https://img.shields.io/badge/platform-macOS%2014%2B-black?style=flat-square" />
   <img src="https://img.shields.io/badge/swift-5.9-F05138?style=flat-square&logo=swift&logoColor=white" />
-  <img src="https://github.com/user/slop-island/actions/workflows/ci.yml/badge.svg" />
+  <img src="https://img.shields.io/github/license/weipapa/slop-island?style=flat-square" />
+  <img src="https://github.com/weipapa/slop-island/actions/workflows/ci.yml/badge.svg" />
+  <a href="https://github.com/weipapa/slop-island/releases/latest"><img src="https://img.shields.io/github/v/release/weipapa/slop-island?style=flat-square&label=download&color=brightgreen" /></a>
 </p>
 
 <h1 align="center">Slop Island</h1>
@@ -10,6 +12,10 @@
   <b>Your MacBook notch is a Claude Code dashboard now.</b>
   <br/>
   <sub>Monitor sessions, approve permissions, answer questions — all from the notch.</sub>
+</p>
+
+<p align="center">
+  <a href="https://github.com/weipapa/slop-island/releases/latest"><b>Download latest release</b></a>
 </p>
 
 <br/>
@@ -76,6 +82,12 @@ Two independent data channels feed into a single `SessionStore`:
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
 - Python 3.14+ (for the hook script)
 - Accessibility permission (for keyboard injection on question answers)
+
+### Download
+
+Grab the latest `.zip` from [Releases](https://github.com/weipapa/slop-island/releases/latest), unzip, and move `SlopIsland.app` to `/Applications`.
+
+> **Note:** The app is unsigned. On first launch, right-click → Open, or allow it in System Settings → Privacy & Security.
 
 ### Build from source
 
