@@ -38,7 +38,13 @@
 		B10028 /* QuestionContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20028; };
 		B10029 /* KeySender.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20029; };
 		B10030 /* PermissionRequestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20030; };
+		B10031 /* LoginItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20031; };
+		B10032 /* SettingsContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20032; };
+		B10033 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20033; };
 		B10099 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B20099; };
+		C10001 /* SessionPhaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20001; };
+		C10002 /* SessionStateReducerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20002; };
+		C10003 /* TranscriptRecordTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20003; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -73,9 +79,16 @@
 		B20028 /* QuestionContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionContentView.swift; sourceTree = "<group>"; };
 		B20029 /* KeySender.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeySender.swift; sourceTree = "<group>"; };
 		B20030 /* PermissionRequestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionRequestView.swift; sourceTree = "<group>"; };
+		B20031 /* LoginItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginItem.swift; sourceTree = "<group>"; };
+		B20032 /* SettingsContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsContentView.swift; sourceTree = "<group>"; };
+		B20033 /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		B20098 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		B20099 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B20100 /* SlopIsland.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SlopIsland.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		C20001 /* SessionPhaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionPhaseTests.swift; sourceTree = "<group>"; };
+		C20002 /* SessionStateReducerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStateReducerTests.swift; sourceTree = "<group>"; };
+		C20003 /* TranscriptRecordTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptRecordTests.swift; sourceTree = "<group>"; };
+		C20100 /* SlopIslandTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SlopIslandTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -93,8 +106,19 @@
 			isa = PBXGroup;
 			children = (
 				B40002 /* SlopIsland */,
+				C40001 /* SlopIslandTests */,
 				B40099 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		C40001 /* SlopIslandTests */ = {
+			isa = PBXGroup;
+			children = (
+				C20001 /* SessionPhaseTests.swift */,
+				C20002 /* SessionStateReducerTests.swift */,
+				C20003 /* TranscriptRecordTests.swift */,
+			);
+			path = SlopIslandTests;
 			sourceTree = "<group>";
 		};
 		B40002 /* SlopIsland */ = {
@@ -140,6 +164,7 @@
 				B20010 /* AppSettings.swift */,
 				B20011 /* SessionMetadataManager.swift */,
 				B20012 /* IslandViewModel.swift */,
+				B20031 /* LoginItem.swift */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -182,6 +207,7 @@
 			children = (
 				B20018 /* NotchPanel.swift */,
 				B20019 /* NotchViewController.swift */,
+				B20033 /* SettingsWindowController.swift */,
 			);
 			path = Window;
 			sourceTree = "<group>";
@@ -204,6 +230,7 @@
 				B20026 /* ChatContentView.swift */,
 				B20028 /* QuestionContentView.swift */,
 				B20030 /* PermissionRequestView.swift */,
+				B20032 /* SettingsContentView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -221,6 +248,7 @@
 			isa = PBXGroup;
 			children = (
 				B20100 /* SlopIsland.app */,
+				C20100 /* SlopIslandTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -245,7 +273,41 @@
 			productReference = B20100 /* SlopIsland.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C50001 /* SlopIslandTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C70002 /* Build configuration list for PBXNativeTarget "SlopIslandTests" */;
+			buildPhases = (
+				C60001 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C90001 /* PBXTargetDependency */,
+			);
+			name = SlopIslandTests;
+			productName = SlopIslandTests;
+			productReference = C20100 /* SlopIslandTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
+
+/* Begin PBXContainerItemProxy section */
+		C90002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B80001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B50001;
+			remoteInfo = SlopIsland;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		C90001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B50001 /* SlopIsland */;
+			targetProxy = C90002 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXProject section */
 		B80001 /* Project object */ = {
@@ -254,6 +316,12 @@
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1540;
 				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					C50001 = {
+						CreatedOnToolsVersion = 15.4;
+						TestTargetID = B50001;
+					};
+				};
 			};
 			buildConfigurationList = B70001 /* Build configuration list for PBXProject "SlopIsland" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -269,6 +337,7 @@
 			projectRoot = "";
 			targets = (
 				B50001 /* SlopIsland */,
+				C50001 /* SlopIslandTests */,
 			);
 		};
 /* End PBXProject section */
@@ -320,6 +389,19 @@
 				B10028 /* QuestionContentView.swift in Sources */,
 				B10029 /* KeySender.swift in Sources */,
 				B10030 /* PermissionRequestView.swift in Sources */,
+				B10031 /* LoginItem.swift in Sources */,
+				B10032 /* SettingsContentView.swift in Sources */,
+				B10033 /* SettingsWindowController.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C60001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C10001 /* SessionPhaseTests.swift in Sources */,
+				C10002 /* SessionStateReducerTests.swift in Sources */,
+				C10003 /* TranscriptRecordTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -434,6 +516,38 @@
 			};
 			name = Release;
 		};
+		C90003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.slopIsland.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SlopIsland.app/Contents/MacOS/SlopIsland";
+			};
+			name = Debug;
+		};
+		C90004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_IDENTITY = "-";
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.slopIsland.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SlopIsland.app/Contents/MacOS/SlopIsland";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -451,6 +565,15 @@
 			buildConfigurations = (
 				B90003 /* Debug */,
 				B90004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C70002 /* Build configuration list for PBXNativeTarget "SlopIslandTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C90003 /* Debug */,
+				C90004 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

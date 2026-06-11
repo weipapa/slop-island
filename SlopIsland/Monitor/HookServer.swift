@@ -118,6 +118,11 @@ final class HookServer {
         // kill the whole app). Deliver EPIPE on the syscall instead.
         var on: Int32 = 1
         setsockopt(clientFd, SOL_SOCKET, SO_NOSIGPIPE, &on, socklen_t(MemoryLayout<Int32>.size))
+        // Bound the blocking read() in handleClient: a client that connects but
+        // never sends a complete request (or never shuts down its write end)
+        // would otherwise pin a worker thread forever.
+        var timeout = timeval(tv_sec: 5, tv_usec: 0)
+        setsockopt(clientFd, SOL_SOCKET, SO_RCVTIMEO, &timeout, socklen_t(MemoryLayout<timeval>.size))
         clientQueue.async { [weak self] in self?.handleClient(clientFd) }
     }
 

@@ -32,8 +32,19 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         HookInstaller.installIfNeeded()
 
         setupStoreObserver()
+
+        // Reposition when displays change (plug/unplug, resolution, lid).
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didChangeScreenParametersNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.viewModel?.handleScreenChange()
+        }
     }
 
+    /// Settings and Quit live in the panel's top-right header (IslandView),
+    /// not a menu-bar item — the island itself is the only chrome.
     private func setupStoreObserver() {
         SessionStore.shared.observe { [weak self] changedSessionID, sessions in
             guard let self = self, let vm = self.viewModel else { return }

@@ -1,6 +1,6 @@
 import AppKit
 
-struct NotchGeometry {
+struct NotchGeometry: Equatable {
     let notchCenterX: CGFloat
     let notchWidth: CGFloat
     let notchHeight: CGFloat

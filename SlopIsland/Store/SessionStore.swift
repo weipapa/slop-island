@@ -38,7 +38,7 @@ final class SessionStore {
     /// multiple questions the sequence advances with Tab and submits with Return.
     func answerQuestion(_ question: UserQuestion, optionIndices: [Int]) {
         let numbers = optionIndices.map { $0 + 1 }
-        KeySender.sendAnswerSequence(numbers: numbers)
+        KeySender.sendAnswerSequence(numbers: numbers, cwd: question.cwd)
         updatePhase(sessionID: question.sessionID, phase: .processing(action: "continuing"))
     }
 
@@ -66,15 +66,15 @@ final class SessionStore {
         case .questionReceived(let question):
             let projectDir = question.cwd.replacingOccurrences(of: "/", with: "-")
             let projectName = URL(fileURLWithPath: question.cwd).lastPathComponent
-            ensureSession(id: question.sessionID, projectDir: projectDir, projectName: projectName.isEmpty ? "Claude" : projectName)
+            ensureSession(id: question.sessionID, projectDir: projectDir, projectName: projectName.isEmpty ? "Claude" : projectName, cwd: question.cwd)
             updatePhase(sessionID: question.sessionID, phase: .waitingForQuestion(question))
 
         case .questionAnswered(let sessionID, _):
             // Answers are delivered to the terminal via KeySender, not the socket.
             updatePhase(sessionID: sessionID, phase: .processing(action: "continuing"))
 
-        case .activityDetected(let sessionID, let action, let projectDir, let projectName):
-            ensureSession(id: sessionID, projectDir: projectDir, projectName: projectName)
+        case .activityDetected(let sessionID, let action, let projectDir, let projectName, let cwd):
+            ensureSession(id: sessionID, projectDir: projectDir, projectName: projectName, cwd: cwd)
             updatePhase(sessionID: sessionID, phase: .processing(action: action))
 
         case .sessionEnded(let sessionID):
@@ -88,7 +88,7 @@ final class SessionStore {
     private func processHook(_ hook: HookEvent) {
         let projectDir = hook.cwd.replacingOccurrences(of: "/", with: "-")
         ensureSession(id: hook.sessionID, projectDir: projectDir, projectName: hook.projectName,
-                      transcriptPath: hook.transcriptPath)
+                      transcriptPath: hook.transcriptPath, cwd: hook.cwd)
 
         switch hook.status {
         case "waiting_for_approval":
@@ -114,42 +114,16 @@ final class SessionStore {
         }
     }
 
-    private func ensureSession(id: String, projectDir: String, projectName: String, transcriptPath: String = "") {
-        if let existing = sessions[id] {
-            // Backfill the transcript path once we learn it from a hook.
-            if existing.transcriptPath.isEmpty, !transcriptPath.isEmpty {
-                sessions[id] = SessionState(
-                    sessionID: existing.sessionID,
-                    projectDir: existing.projectDir,
-                    projectName: existing.projectName,
-                    phase: existing.phase,
-                    lastActivity: existing.lastActivity,
-                    transcriptPath: transcriptPath
-                )
-            }
-            return
-        }
-        sessions[id] = SessionState(
-            sessionID: id,
-            projectDir: projectDir,
-            projectName: projectName.isEmpty ? "project" : projectName,
-            phase: .idle,
-            lastActivity: Date(),
-            transcriptPath: transcriptPath
-        )
+    private func ensureSession(id: String, projectDir: String, projectName: String, transcriptPath: String = "", cwd: String = "") {
+        sessions = SessionState.ensuring(
+            sessions, id: id, projectDir: projectDir,
+            projectName: projectName, transcriptPath: transcriptPath, cwd: cwd, now: Date())
     }
 
     private func updatePhase(sessionID: String, phase: SessionPhase) {
-        guard let session = sessions[sessionID] else { return }
-        guard session.phase.canTransition(to: phase) else { return }
-        sessions[sessionID] = SessionState(
-            sessionID: session.sessionID,
-            projectDir: session.projectDir,
-            projectName: session.projectName,
-            phase: phase,
-            lastActivity: Date(),
-            transcriptPath: session.transcriptPath
-        )
+        let result = SessionState.applyingPhase(sessions, id: sessionID, phase: phase, now: Date())
+        guard result.changed else { return }
+        sessions = result.sessions
         notifyObservers(changedSessionID: sessionID)
 
         if case .ended = phase {
@@ -163,7 +137,7 @@ final class SessionStore {
         let endedAt = sessions[sessionID]?.lastActivity
         DispatchQueue.main.asyncAfter(deadline: .now() + endedRetentionSeconds) { [weak self] in
             guard let self = self, let session = self.sessions[sessionID] else { return }
-            guard case .ended = session.phase, session.lastActivity == endedAt else { return }
+            guard SessionState.shouldRemoveEnded(session, endedAt: endedAt) else { return }
             self.sessions.removeValue(forKey: sessionID)
             for observer in self.removalObservers { observer(sessionID) }
             self.notifyObservers(changedSessionID: sessionID)

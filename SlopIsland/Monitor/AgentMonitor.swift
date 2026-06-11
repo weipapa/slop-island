@@ -3,7 +3,7 @@ import CoreServices
 
 final class AgentMonitor {
 
-    private let projectsDir = NSString(string: "~/.codefuse/engine/cc/projects").expandingTildeInPath
+    private let projectsDir = AppPaths.projectsDir
     private var watchedFiles: [String: UInt64] = [:]
     private var sessionStartTimes: [String: Date] = [:]
 
@@ -138,9 +138,8 @@ final class AgentMonitor {
 
             let sessionId = url.deletingPathExtension().lastPathComponent
             let projectDir = parentDir
-            let projectName = projectDir
-                .replacingOccurrences(of: "-Users-lpw-", with: "")
-                .replacingOccurrences(of: "-", with: "/")
+            let cwd = readCwd(path: path) ?? ""
+            let projectName = Self.projectName(cwd: cwd, projectDir: projectDir)
 
             sessionStartTimes[sessionId] = modDate
 
@@ -150,7 +149,8 @@ final class AgentMonitor {
                 sessionID: sessionId,
                 action: lastAction ?? "idle",
                 projectDir: projectDir,
-                projectName: projectName
+                projectName: projectName,
+                cwd: cwd
             ))
 
             let currentSize = (attrs[.size] as? UInt64) ?? 0
@@ -163,30 +163,19 @@ final class AgentMonitor {
     private func readLastAction(path: String) -> String? {
         guard let text = tail(path: path, maxBytes: 256 * 1024) else { return nil }
 
-        let lines = text.components(separatedBy: "\n").reversed()
-        for line in lines {
-            guard !line.isEmpty,
-                  let lineData = line.data(using: .utf8),
-                  let json = try? JSONSerialization.jsonObject(with: lineData) as? [String: Any]
-            else { continue }
+        for line in text.components(separatedBy: "\n").reversed() {
+            guard let record = TranscriptRecord.decode(line: line),
+                  let block = record.firstAssistantBlock else { continue }
 
-            let type = json["type"] as? String ?? ""
-            if type == "assistant",
-               let message = json["message"] as? [String: Any],
-               let content = message["content"] as? [[String: Any]] {
-                for block in content {
-                    if block["type"] as? String == "tool_use" {
-                        let toolName = block["name"] as? String ?? ""
-                        let input = block["input"] as? [String: Any] ?? [:]
-                        let detail = (input["command"] as? String)
-                            ?? (input["file_path"] as? String).map { ($0 as NSString).lastPathComponent }
-                            ?? ""
-                        return "\(toolName) \(detail)".trimmingCharacters(in: .whitespaces)
-                    }
-                    if block["type"] as? String == "text" {
-                        return "thinking"
-                    }
-                }
+            if block.type == "tool_use" {
+                let toolName = block.name ?? ""
+                let detail = block.input?.command
+                    ?? block.input?.filePath.map { ($0 as NSString).lastPathComponent }
+                    ?? ""
+                return "\(toolName) \(detail)".trimmingCharacters(in: .whitespaces)
+            }
+            if block.type == "text" {
+                return "thinking"
             }
         }
         return nil
@@ -220,26 +209,51 @@ final class AgentMonitor {
 
         let sessionId = URL(fileURLWithPath: path).deletingPathExtension().lastPathComponent
         let projectDir = URL(fileURLWithPath: path).deletingLastPathComponent().lastPathComponent
-        let projectName = projectDir
-            .replacingOccurrences(of: "-Users-lpw-", with: "")
-            .replacingOccurrences(of: "-", with: "/")
 
         if sessionStartTimes[sessionId] == nil {
             sessionStartTimes[sessionId] = Date()
         }
 
-        for line in text.components(separatedBy: "\n") where !line.isEmpty {
-            guard let lineData = line.data(using: .utf8),
-                  let json = try? JSONSerialization.jsonObject(with: lineData) as? [String: Any]
-            else { continue }
+        for line in text.components(separatedBy: "\n") {
+            guard let record = TranscriptRecord.decode(line: line) else { continue }
 
-            processJsonlEntry(json, sessionId: sessionId, projectDir: projectDir, projectName: projectName)
+            // Each record carries the real absolute cwd; derive the display name
+            // from it rather than reverse-engineering the encoded directory name.
+            let projectName = Self.projectName(cwd: record.cwd, projectDir: projectDir)
+            processRecord(record, sessionId: sessionId, projectDir: projectDir, projectName: projectName)
         }
     }
 
-    private func processJsonlEntry(_ json: [String: Any], sessionId: String, projectDir: String, projectName: String) {
-        let type = json["type"] as? String ?? ""
+    /// Display name for a session. Prefer the real `cwd` (its last path
+    /// component); fall back to the encoded directory name when cwd is unknown.
+    /// The encoded name replaces every "/" in the original path with "-", so it
+    /// cannot be reliably decoded — we only use its last "-"-separated segment.
+    static func projectName(cwd: String?, projectDir: String) -> String {
+        if let cwd = cwd, !cwd.isEmpty {
+            let name = (cwd as NSString).lastPathComponent
+            if !name.isEmpty { return name }
+        }
+        let fallback = projectDir.split(separator: "-").last.map(String.init) ?? projectDir
+        return fallback.isEmpty ? "project" : fallback
+    }
+
+    /// Read the tail of a transcript and return the first `cwd` it can find, so
+    /// a freshly scanned session gets a correct display name on launch.
+    private func readCwd(path: String) -> String? {
+        guard let text = tail(path: path, maxBytes: 256 * 1024) else { return nil }
+        for line in text.components(separatedBy: "\n").reversed() {
+            guard let record = TranscriptRecord.decode(line: line),
+                  let cwd = record.cwd, !cwd.isEmpty
+            else { continue }
+            return cwd
+        }
+        return nil
+    }
+
+    private func processRecord(_ record: TranscriptRecord, sessionId: String, projectDir: String, projectName: String) {
+        let type = record.type ?? ""
         let store = SessionStore.shared
+        let cwd = record.cwd ?? ""
 
         // The hook stream is authoritative for permission/question prompts.
         // Never let file-polled activity overwrite a session that's waiting on
@@ -253,48 +267,41 @@ final class AgentMonitor {
 
         switch type {
         case "assistant":
-            guard let message = json["message"] as? [String: Any],
-                  let content = message["content"] as? [[String: Any]] else { return }
+            guard let content = record.message?.content else { return }
 
             for block in content {
-                let blockType = block["type"] as? String ?? ""
-                if blockType == "tool_use" {
-                    let toolName = block["name"] as? String ?? ""
-                    let input = block["input"] as? [String: Any] ?? [:]
-                    let action = actionDescription(tool: toolName, input: input, elapsed: elapsed)
-                    store.process(.activityDetected(sessionID: sessionId, action: action, projectDir: projectDir, projectName: projectName))
+                if block.type == "tool_use" {
+                    let action = actionDescription(tool: block.name ?? "", input: block.input, elapsed: elapsed)
+                    store.process(.activityDetected(sessionID: sessionId, action: action, projectDir: projectDir, projectName: projectName, cwd: cwd))
                     return
-                } else if blockType == "text" {
+                } else if block.type == "text" {
                     store.process(.activityDetected(
                         sessionID: sessionId,
                         action: "thinking \u{00B7} \(elapsed)",
                         projectDir: projectDir,
-                        projectName: projectName
+                        projectName: projectName,
+                        cwd: cwd
                     ))
                     return
                 }
             }
 
         case "user":
-            guard let message = json["message"] as? [String: Any],
-                  let content = message["content"] as? [[String: Any]] else { return }
+            guard let content = record.message?.content else { return }
 
-            for block in content {
-                let blockType = block["type"] as? String ?? ""
-                if blockType == "tool_result" {
-                    store.process(.activityDetected(
-                        sessionID: sessionId,
-                        action: "thinking \u{00B7} \(elapsed)",
-                        projectDir: projectDir,
-                        projectName: projectName
-                    ))
-                    return
-                }
+            for block in content where block.type == "tool_result" {
+                store.process(.activityDetected(
+                    sessionID: sessionId,
+                    action: "thinking \u{00B7} \(elapsed)",
+                    projectDir: projectDir,
+                    projectName: projectName,
+                    cwd: cwd
+                ))
+                return
             }
 
         case "system":
-            let subtype = json["subtype"] as? String ?? ""
-            if subtype == "stop" || subtype == "stop_hook_summary" {
+            if record.subtype == "stop" || record.subtype == "stop_hook_summary" {
                 sessionStartTimes[sessionId] = nil
                 store.process(.sessionEnded(sessionID: sessionId))
             }
@@ -304,20 +311,17 @@ final class AgentMonitor {
         }
     }
 
-    private func actionDescription(tool: String, input: [String: Any], elapsed: String) -> String {
+    private func actionDescription(tool: String, input: TranscriptRecord.ToolInput?, elapsed: String) -> String {
         let detail: String
         switch tool {
         case "Bash":
-            let cmd = (input["command"] as? String) ?? ""
+            let cmd = input?.command ?? ""
             detail = "\u{25B6} \(String(cmd.prefix(30)))"
-        case "Write":
-            let file = (input["file_path"] as? String) ?? "file"
-            detail = "\u{270E} \((file as NSString).lastPathComponent)"
-        case "Edit":
-            let file = (input["file_path"] as? String) ?? "file"
+        case "Write", "Edit":
+            let file = input?.filePath ?? "file"
             detail = "\u{270E} \((file as NSString).lastPathComponent)"
         case "Read":
-            let file = (input["file_path"] as? String) ?? "file"
+            let file = input?.filePath ?? "file"
             detail = "\u{25C9} \((file as NSString).lastPathComponent)"
         case "Grep", "Glob":
             detail = "\u{2315} searching"

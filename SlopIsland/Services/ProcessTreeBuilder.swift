@@ -6,10 +6,36 @@ struct ProcessInfo {
     let command: String
 }
 
-struct ProcessTreeBuilder {
+final class ProcessTreeBuilder {
     static let shared = ProcessTreeBuilder()
 
+    /// `/bin/ps` is forked synchronously, so cache its result briefly. Repeated
+    /// callers within the TTL reuse the snapshot instead of spawning a new
+    /// process each time — the process tree doesn't change meaningfully faster
+    /// than this, and it keeps a burst of calls from piling up `ps` forks.
+    private let cacheTTL: TimeInterval = 5
+    private let lock = NSLock()
+    private var cached: [Int: ProcessInfo]?
+    private var cachedAt: Date = .distantPast
+
     func buildTree() -> [Int: ProcessInfo] {
+        lock.lock()
+        if let cached, Date().timeIntervalSince(cachedAt) < cacheTTL {
+            defer { lock.unlock() }
+            return cached
+        }
+        lock.unlock()
+
+        let fresh = runPS()
+
+        lock.lock()
+        cached = fresh
+        cachedAt = Date()
+        lock.unlock()
+        return fresh
+    }
+
+    private func runPS() -> [Int: ProcessInfo] {
         let pipe = Pipe()
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/ps")

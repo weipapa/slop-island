@@ -15,14 +15,15 @@ struct KeySender {
 
     /// Focus the session's terminal, then inject `text` followed by Return.
     /// Returns false immediately if Accessibility permission is missing.
+    /// `cwd` targets the exact terminal tab; empty falls back to app activation.
     @discardableResult
-    static func sendToTerminal(text: String) -> Bool {
+    static func sendToTerminal(text: String, cwd: String = "") -> Bool {
         guard hasAccessibilityPermission else {
             requestAccessibilityPermission()
             return false
         }
 
-        TerminalFocuser.shared.focusTerminal { focused in
+        TerminalFocuser.shared.focusTerminal(cwd: cwd) { focused in
             guard focused else {
                 send(text)
                 return
@@ -40,14 +41,14 @@ struct KeySender {
     /// after the last with Return. Each keystroke is spaced out so the terminal
     /// TUI can process and re-render between steps.
     @discardableResult
-    static func sendAnswerSequence(numbers: [Int]) -> Bool {
+    static func sendAnswerSequence(numbers: [Int], cwd: String = "") -> Bool {
         guard hasAccessibilityPermission else {
             requestAccessibilityPermission()
             return false
         }
         guard !numbers.isEmpty else { return false }
 
-        TerminalFocuser.shared.focusTerminal { focused in
+        TerminalFocuser.shared.focusTerminal(cwd: cwd) { focused in
             let start: Double = focused ? 0.12 : 0.0
             var delay = start
             let step = 0.12

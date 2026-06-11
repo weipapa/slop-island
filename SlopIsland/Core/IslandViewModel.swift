@@ -21,7 +21,7 @@ final class IslandViewModel {
         }
     }
 
-    let geometry: NotchGeometry
+    private(set) var geometry: NotchGeometry
 
     var status: Status = .closed
     var contentType: ContentType = .sessions
@@ -30,6 +30,7 @@ final class IslandViewModel {
     private var mouseMonitor: Any?
     private var localMouseMonitor: Any?
     private var hoverTask: Task<Void, Never>?
+    private var lastMouseMovedAt: TimeInterval = 0
     weak var panel: NotchPanel?
 
     private var panelWidth: CGFloat {
@@ -54,7 +55,8 @@ final class IslandViewModel {
         switch contentType {
         case .sessions:
             let count = max(SessionStore.shared.allSessions.count, 1)
-            return 10 + CGFloat(count) * 56 + 16
+            // header row (28) + VStack spacing (8) + list + vertical padding.
+            return 28 + 8 + 10 + CGFloat(count) * 56 + 16
         case .chat:
             return 400
         case .permission:
@@ -65,13 +67,11 @@ final class IslandViewModel {
     }
 
     /// Called by the question view when the user turns to another page, so the
-    /// panel can resize to hug just that page.
+    /// content can resize to hug just that page.
     func setQuestionPage(_ page: Int) {
         guard case .question = contentType, page != currentQuestionPage else { return }
         currentQuestionPage = page
-        if let panel = findPanel(), status == .opened {
-            panel.animateToSize(width: panelWidth, belowHeight: contentHeight)
-        }
+        if status == .opened { updateInteractiveRect() }
     }
 
     /// Deterministic height estimate for the currently shown question page. Only
@@ -103,10 +103,8 @@ final class IslandViewModel {
     func notchOpen() {
         guard status == .closed else { return }
         status = .opened
-        if let panel = findPanel() {
-            panel.makeKeyAndOrderFront(nil)
-            panel.animateToSize(width: panelWidth, belowHeight: contentHeight)
-        }
+        findPanel()?.makeKeyAndOrderFront(nil)
+        updateInteractiveRect()
     }
 
     func notchClose() {
@@ -114,25 +112,22 @@ final class IslandViewModel {
         if case .permission = contentType { return }
         status = .closed
         contentType = .sessions
-        if let panel = findPanel() {
-            panel.animateToSize(width: geometry.notchWidth, belowHeight: 0)
-        }
+        updateInteractiveRect()
     }
 
     func showChat(sessionID: String) {
         contentType = .chat(sessionID)
-        syncPanelSize()
+        updateInteractiveRect()
     }
 
     func exitChat() {
         contentType = .sessions
-        syncPanelSize()
+        updateInteractiveRect()
     }
 
     func showQuestion(_ question: UserQuestion) {
         // Idempotent: the store re-notifies on every state change, but we must
-        // not reset the measured height / resize while already showing the same
-        // prompt (that collapses the panel back to the fallback minimum).
+        // not reset the measured height while already showing the same prompt.
         if case .question(let current) = contentType,
            current.sessionID == question.sessionID,
            current.items.count == question.items.count {
@@ -141,19 +136,15 @@ final class IslandViewModel {
         currentQuestionPage = 0
         contentType = .question(question)
         status = .opened
-        if let panel = findPanel() {
-            panel.makeKeyAndOrderFront(nil)
-            panel.setSize(width: panelWidth, belowHeight: contentHeight)
-        }
+        findPanel()?.makeKeyAndOrderFront(nil)
+        updateInteractiveRect()
     }
 
     func dismissQuestion() {
         if case .question = contentType {
             contentType = .sessions
             status = .closed
-            if let panel = findPanel() {
-                panel.setSize(width: geometry.notchWidth, belowHeight: 0)
-            }
+            updateInteractiveRect()
         }
     }
 
@@ -164,10 +155,8 @@ final class IslandViewModel {
         }
         contentType = .permission(session, context)
         status = .opened
-        if let panel = findPanel() {
-            panel.makeKeyAndOrderFront(nil)
-            panel.setSize(width: panelWidth, belowHeight: contentHeight)
-        }
+        findPanel()?.makeKeyAndOrderFront(nil)
+        updateInteractiveRect()
     }
 
     func dismissPermission() {
@@ -183,21 +172,39 @@ final class IslandViewModel {
 
         if let next = nextPermission, case .waitingForApproval(let ctx) = next.phase {
             contentType = .permission(next, ctx)
-            if let panel = findPanel() {
-                panel.setSize(width: panelWidth, belowHeight: contentHeight)
-            }
         } else {
             contentType = .sessions
-            if let panel = findPanel() {
-                panel.animateToSize(width: panelWidth, belowHeight: contentHeight)
-            }
+        }
+        updateInteractiveRect()
+    }
+
+    /// Recompute the screen-space rect the visible content currently occupies
+    /// and hand it to the panel for hit-testing. The window itself never moves
+    /// or resizes — only this interactive region (and the SwiftUI content) change.
+    private func updateInteractiveRect() {
+        guard let panel = findPanel() else { return }
+        if status == .closed {
+            panel.currentInteractiveRect = NotchPanel.notchRect(geometry: geometry)
+        } else {
+            let size = openedSize
+            panel.currentInteractiveRect = NSRect(
+                x: geometry.notchCenterX - size.width / 2,
+                y: geometry.screenTopY - size.height,
+                width: size.width,
+                height: size.height
+            )
         }
     }
 
-    private func syncPanelSize() {
-        if let panel = findPanel(), status == .opened {
-            panel.animateToSize(width: panelWidth, belowHeight: contentHeight)
-        }
+    /// Re-detect geometry and reposition the panel after a screen change
+    /// (display plugged/unplugged, resolution change, lid open/close). Without
+    /// this the island stays pinned to the old screen's coordinates.
+    func handleScreenChange() {
+        let fresh = NotchGeometry.detect()
+        guard fresh != geometry else { return }
+        geometry = fresh
+        findPanel()?.reposition(to: fresh)
+        updateInteractiveRect()
     }
 
     private func findPanel() -> NotchPanel? {
@@ -223,6 +230,12 @@ final class IslandViewModel {
 
         switch event.type {
         case .mouseMoved:
+            // Throttle high-frequency move events: hit-testing on every sample
+            // is wasted work when the pointer is sweeping across the screen.
+            let now = Foundation.ProcessInfo.processInfo.systemUptime
+            guard now - lastMouseMovedAt >= 0.05 else { return }
+            lastMouseMovedAt = now
+
             let inNotch = geometry.isPointInNotch(loc)
             let inPanel = status == .opened && geometry.isPointInOpenedPanel(loc, size: openedSize)
             let nowHovering = inNotch || inPanel
@@ -231,7 +244,7 @@ final class IslandViewModel {
                 isHovering = true
                 hoverTask?.cancel()
                 hoverTask = Task { @MainActor in
-                    try? await Task.sleep(for: .seconds(0.8))
+                    try? await Task.sleep(for: .seconds(0.2))
                     guard !Task.isCancelled, self.isHovering else { return }
                     self.notchOpen()
                 }

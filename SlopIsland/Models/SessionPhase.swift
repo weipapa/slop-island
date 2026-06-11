@@ -37,17 +37,18 @@ enum SessionPhase: Equatable {
         case .processing:
             return true
         case .waitingForApproval:
-            // Only an explicit resolution (continue/idle) or end may clear an
-            // approval prompt. Plain activity must NOT clobber it.
+            // Only an explicit resolution (continue/idle), end, or a switch to
+            // the other attention state may clear an approval prompt. Plain
+            // activity must NOT clobber it.
             switch next {
-            case .processing, .idle:
+            case .processing, .idle, .waitingForQuestion:
                 return true
             default:
                 return false
             }
         case .waitingForQuestion:
             switch next {
-            case .processing, .idle:
+            case .processing, .idle, .waitingForApproval:
                 return true
             default:
                 return false

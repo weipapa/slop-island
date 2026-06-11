@@ -7,20 +7,29 @@ struct SessionListContentView: View {
 
     var body: some View {
         let sessions = sortedSessions
-        if sessions.isEmpty {
-            emptyState
-        } else {
-            VStack(spacing: 2) {
-                ForEach(sessions) { session in
-                    SessionRowContentView(
-                        session: session,
-                        terminalName: terminalName,
-                        onTap: { handleTap(session) },
-                        onApprove: { store.process(.permissionApproved(sessionID: session.sessionID)) },
-                        onDeny: { store.process(.permissionDenied(sessionID: session.sessionID)) }
-                    )
+        Group {
+            if sessions.isEmpty {
+                emptyState
+            } else {
+                VStack(spacing: 2) {
+                    ForEach(sessions) { session in
+                        SessionRowContentView(
+                            session: session,
+                            terminalName: terminalName,
+                            onTap: { handleTap(session) },
+                            onApprove: { store.process(.permissionApproved(sessionID: session.sessionID)) },
+                            onDeny: { store.process(.permissionDenied(sessionID: session.sessionID)) }
+                        )
+                    }
                 }
             }
+        }
+        // Detect the terminal name off the render path: only when the set of
+        // sessions changes (e.g. a new `claude` appears), never on every body
+        // re-evaluation. Writing state from inside `body` would re-trigger
+        // `body`, spinning a `/bin/ps` fork loop that pins the CPU.
+        .task(id: sessions.count) {
+            terminalName = await detectTerminalName()
         }
     }
 
@@ -34,19 +43,10 @@ struct SessionListContentView: View {
                 .foregroundColor(.white.opacity(0.25))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .task {
-            terminalName = await detectTerminalName()
-        }
     }
 
     private var sortedSessions: [SessionState] {
-        let s = store.allSessions.sorted { priority($0.phase) < priority($1.phase) }
-        if terminalName == "Terminal" {
-            Task { @MainActor in
-                terminalName = await detectTerminalName()
-            }
-        }
-        return s
+        store.allSessions.sorted { priority($0.phase) < priority($1.phase) }
     }
 
     private func priority(_ phase: SessionPhase) -> Int {
@@ -64,7 +64,7 @@ struct SessionListContentView: View {
         case .waitingForQuestion(let question):
             viewModel.showQuestion(question)
         default:
-            TerminalFocuser.shared.focusTerminal()
+            TerminalFocuser.shared.focusTerminal(cwd: session.cwd)
         }
     }
 

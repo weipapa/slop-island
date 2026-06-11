@@ -28,13 +28,7 @@ enum HookInstaller {
         (supportDir as NSString).appendingPathComponent(scriptName)
     }
 
-    static var settingsPath: String {
-        if let dir = Foundation.ProcessInfo.processInfo.environment["CLAUDE_CONFIG_DIR"], !dir.isEmpty {
-            return (dir as NSString).appendingPathComponent("settings.json")
-        }
-        return (NSHomeDirectory() as NSString)
-            .appendingPathComponent(".codefuse/engine/cc/settings.json")
-    }
+    static var settingsPath: String { AppPaths.settingsPath }
 
     static func installIfNeeded() {
         do {
@@ -102,7 +96,11 @@ enum HookInstaller {
                     return inner.contains { ($0["command"] as? String)?.contains(marker) == true }
                 }
                 var hook: [String: Any] = ["type": "command", "command": command]
-                if blocking { hook["timeout"] = 86400 }
+                // Bound the blocking PermissionRequest hook to the same window
+                // the app and python client use (HookServer.permissionTimeoutSeconds /
+                // PERMISSION_RECV_TIMEOUT_SECONDS). A 24h timeout meant a wedged
+                // HookServer could hang Claude itself for a full day.
+                if blocking { hook["timeout"] = Int(HookServer.permissionTimeoutSeconds) }
                 entries.append(["matcher": "*", "hooks": [hook]])
                 hooks[name] = entries
             }
@@ -119,7 +117,8 @@ enum HookInstaller {
     /// Removes SlopIsland's own hook entries (used when disabling).
     static func uninstall() {
         let url = URL(fileURLWithPath: settingsPath)
-        try? withFileLock(at: settingsPath) {
+        do {
+        try withFileLock(at: settingsPath) {
             guard let data = try? Data(contentsOf: url),
                   var root = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   var hooks = root["hooks"] as? [String: Any] else { return }
@@ -134,6 +133,9 @@ enum HookInstaller {
             root["hooks"] = hooks
             let out = try JSONSerialization.data(withJSONObject: root, options: [.prettyPrinted])
             try out.write(to: url, options: .atomic)
+        }
+        } catch {
+            NSLog("[SlopIsland] hook uninstall failed (entries may remain in \(settingsPath)): \(error)")
         }
     }
 
